@@ -162,29 +162,60 @@ section.visible { opacity:1; transform:translateY(0); }
 
 /* ===== CJM TABLE ===== */
 .cjm-wrapper {
-  overflow-x:auto; margin-top:32px; border-radius:16px;
+  margin-top:32px;
+  border-radius:16px;
   border:1px solid rgba(255,255,255,0.06);
 }
+
 .cjm-table {
-  width:100%; min-width:1100px; border-collapse:collapse;
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
 }
-.cjm-table th, .cjm-table td {
-  padding:16px 18px; text-align:left; vertical-align:top;
-  border:1px solid rgba(255,255,255,0.06); font-size:13px;
+
+.cjm-table th,
+.cjm-table td {
+  padding:16px 18px;
+  text-align:left;
+  vertical-align:top;
+  border:1px solid rgba(255,255,255,0.06);
+  font-size:13px;
+
+  word-break:break-word;
+  overflow-wrap:break-word;
+  white-space:normal;
 }
+
 .cjm-table thead th {
-  background:rgba(129,140,248,0.12); color:#818cf8;
-  font-weight:600; font-size:12px; letter-spacing:1px;
-  text-transform:uppercase; position:sticky; top:0;
+  background:rgba(129,140,248,0.12);
+  color:#818cf8;
+  font-weight:600;
+  font-size:12px;
+  letter-spacing:1px;
+  text-transform:uppercase;
 }
+
 .cjm-table .row-label {
-  font-weight:600; color:#fff; background:rgba(255,255,255,0.03);
-  white-space:nowrap; width:140px; font-size:12px;
-  letter-spacing:1px; text-transform:uppercase;
+  font-weight:600;
+  color:#fff;
+  background:rgba(255,255,255,0.03);
+  width:140px;
+  font-size:12px;
+  letter-spacing:1px;
+  text-transform:uppercase;
 }
-.cjm-table .pain { color:#f87171; }
-.cjm-table .opp { color:#34d399; }
-.cjm-table td { color:#94a3b8; }
+
+.cjm-table .pain {
+  color:#f87171;
+}
+
+.cjm-table .opp {
+  color:#34d399;
+}
+
+.cjm-table td {
+  color:#94a3b8;
+}
 
 /* ===== COMPETITOR CARDS ===== */
 .competitor-grid {
