@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MR Editor — UX Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family:'Inter',system-ui,sans-serif;
+  background:#08080f;
+  color:#e2e8f0;
+  line-height:1.7;
+  overflow-x:hidden;
+}
+
+/* ===== NAV DOTS ===== */
+.nav-dots {
+  position:fixed; right:24px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:12px; z-index:100;
+}
+.nav-dots a {
+  width:10px; height:10px; border-radius:50%;
+  background:rgba(255,255,255,0.2); transition:all 0.3s;
+  display:block;
+}
+.nav-dots a:hover, .nav-dots a.active {
+  background:#818cf8; transform:scale(1.4);
+}
+
+/* ===== SECTIONS ===== */
+section {
+  padding:100px 80px;
+  max-width:1200px;
+  margin:0 auto;
+  opacity:0;
+  transform:translateY(30px);
+  transition:opacity 0.6s ease, transform 0.6s ease;
+}
+section.visible { opacity:1; transform:translateY(0); }
+
+.section-label {
+  font-size:13px; font-weight:600; letter-spacing:3px;
+  text-transform:uppercase; color:#818cf8; margin-bottom:12px;
+}
+.section-title {
+  font-size:42px; font-weight:700; margin-bottom:16px;
+  background:linear-gradient(135deg,#818cf8,#22d3ee);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.section-subtitle {
+  font-size:18px; color:#94a3b8; max-width:700px; line-height:1.8;
+  margin-bottom:48px;
+}
+
+/* ===== HERO ===== */
+#hero {
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+  position:relative; overflow:hidden; padding:60px 40px;
+}
+/* hero has no background — clean dark */
+.hero-title {
+  font-size:72px; font-weight:800; letter-spacing:-2px;
+  background:linear-gradient(135deg,#fff 0%,#818cf8 50%,#22d3ee 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; position:relative; z-index:1;
+}
+.hero-subtitle {
+  font-size:20px; color:#94a3b8; margin-top:16px;
+  font-weight:300; letter-spacing:1px; position:relative; z-index:1;
+}
+.hero-pills {
+  display:flex; gap:16px; margin-top:40px; flex-wrap:wrap;
+  justify-content:center; position:relative; z-index:1;
+}
+.hero-pill {
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+  border-radius:100px; padding:10px 24px; font-size:14px; color:#cbd5e1;
+}
+.hero-pill strong { color:#fff; }
+.hero-tags {
+  display:flex; gap:10px; margin-top:24px; flex-wrap:wrap;
+  justify-content:center; position:relative; z-index:1;
+}
+.hero-tag {
+  background:rgba(129,140,248,0.12); border:1px solid rgba(129,140,248,0.25);
+  border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600;
+  color:#818cf8; letter-spacing:1px; text-transform:uppercase;
+}
+
+/* ===== CARDS GRID ===== */
+.cards-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:24px; margin-top:32px;
+}
+.card {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px; padding:32px; transition:all 0.3s;
+}
+.card:hover {
+  border-color:rgba(129,140,248,0.3);
+  transform:translateY(-4px);
+  box-shadow:0 8px 32px rgba(129,140,248,0.1);
+}
+.card-icon { font-size:28px; margin-bottom:16px; }
+.card h3 { font-size:18px; font-weight:600; margin-bottom:8px; color:#fff; }
+.card p { font-size:14px; color:#94a3b8; line-height:1.7; }
+
+/* ===== PERSONA CARDS ===== */
+.persona-card {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px; overflow:hidden; cursor:pointer; transition:all 0.3s;
+  margin-bottom:20px;
+}
+.persona-card:hover { border-color:rgba(129,140,248,0.3); }
+.persona-header {
+  padding:28px 32px; display:flex; align-items:center; justify-content:space-between;
+}
+.persona-header h3 { font-size:20px; color:#fff; }
+.persona-header .persona-role {
+  font-size:13px; color:#818cf8; font-weight:500;
+  background:rgba(129,140,248,0.12); padding:4px 12px; border-radius:100px;
+}
+.persona-header .persona-brief { font-size:14px; color:#94a3b8; margin-top:4px; }
+.persona-toggle {
+  width:28px; height:28px; border-radius:50%;
+  background:rgba(255,255,255,0.06); display:flex; align-items:center;
+  justify-content:center; color:#818cf8; font-size:14px;
+  transition:transform 0.3s; flex-shrink:0;
+}
+.persona-card.open .persona-toggle { transform:rotate(180deg); }
+.persona-details {
+  max-height:0; overflow:hidden; transition:max-height 0.5s ease;
+  padding:0 32px;
+}
+.persona-card.open .persona-details {
+  max-height:600px; padding:0 32px 32px;
+}
+.persona-details .detail-section { margin-bottom:20px; }
+.persona-details .detail-label {
+  font-size:12px; font-weight:600; letter-spacing:2px;
+  text-transform:uppercase; color:#818cf8; margin-bottom:8px;
+}
+.persona-details ul { list-style:none; }
+.persona-details li {
+  font-size:14px; color:#94a3b8; padding:4px 0;
+  padding-left:16px; position:relative;
+}
+.persona-details li::before {
+  content:'→'; position:absolute; left:0; color:#818cf8;
+}
+.persona-quote {
+  font-style:italic; font-size:16px; color:#cbd5e1;
+  border-left:3px solid #818cf8; padding-left:16px; margin-top:16px;
+}
+
+/* ===== CJM TABLE ===== */
+.cjm-wrapper {
+  overflow-x:auto; margin-top:32px; border-radius:16px;
+  border:1px solid rgba(255,255,255,0.06);
+}
+.cjm-table {
+  width:100%; min-width:1100px; border-collapse:collapse;
+}
+.cjm-table th, .cjm-table td {
+  padding:16px 18px; text-align:left; vertical-align:top;
+  border:1px solid rgba(255,255,255,0.06); font-size:13px;
+}
+.cjm-table thead th {
+  background:rgba(129,140,248,0.12); color:#818cf8;
+  font-weight:600; font-size:12px; letter-spacing:1px;
+  text-transform:uppercase; position:sticky; top:0;
+}
+.cjm-table .row-label {
+  font-weight:600; color:#fff; background:rgba(255,255,255,0.03);
+  white-space:nowrap; width:140px; font-size:12px;
+  letter-spacing:1px; text-transform:uppercase;
+}
+.cjm-table .pain { color:#f87171; }
+.cjm-table .opp { color:#34d399; }
+.cjm-table td { color:#94a3b8; }
+
+/* ===== COMPETITOR CARDS ===== */
+.competitor-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:32px;
+}
+.competitor-card {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px; padding:24px;
+}
+.competitor-card h4 { color:#fff; font-size:16px; margin-bottom:8px; }
+.competitor-card p { font-size:13px; color:#94a3b8; }
+.findings-box {
+  background:rgba(129,140,248,0.06); border:1px solid rgba(129,140,248,0.15);
+  border-radius:12px; padding:32px; margin-top:32px;
+}
+.findings-box h4 { color:#818cf8; margin-bottom:16px; font-size:16px; }
+.findings-box li {
+  font-size:14px; color:#cbd5e1; padding:6px 0; list-style:none;
+  padding-left:20px; position:relative;
+}
+.findings-box li::before { content:'⚠'; position:absolute; left:0; }
+.findings-conclusion {
+  margin-top:20px; padding-top:20px;
+  border-top:1px solid rgba(129,140,248,0.15);
+  font-size:14px; color:#94a3b8; font-style:italic;
+}
+
+/* ===== IA MAP ===== */
+.ia-map { margin-top:40px; }
+.ia-section {
+  margin-bottom:32px; border-radius:16px; overflow:hidden;
+  border:1px solid rgba(255,255,255,0.06);
+}
+.ia-section-header {
+  padding:16px 24px; font-weight:700; font-size:14px;
+  letter-spacing:2px; text-transform:uppercase; color:#fff;
+}
+.ia-section-header.auth { background:rgba(244,114,182,0.2); color:#f472b6; }
+.ia-section-header.library { background:rgba(45,212,191,0.2); color:#2dd4bf; }
+.ia-section-header.viewer { background:rgba(167,139,250,0.2); color:#a78bfa; }
+.ia-section-header.editor { background:rgba(74,222,128,0.2); color:#4ade80; }
+.ia-screens { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1px; background:rgba(255,255,255,0.04); }
+.ia-screen { background:#0d0d1a; padding:20px 24px; }
+.ia-screen h4 { font-size:14px; color:#fff; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.ia-screen h4 .screen-icon { font-size:16px; }
+.ia-screen .components { display:flex; flex-wrap:wrap; gap:6px; }
+.ia-screen .comp-tag {
+  font-size:11px; padding:4px 10px; border-radius:4px;
+  background:rgba(255,255,255,0.04); color:#94a3b8;
+  border:1px solid rgba(255,255,255,0.06);
+}
+.ia-stats {
+  display:flex; gap:40px; justify-content:center; margin-top:32px;
+  padding:24px; background:rgba(129,140,248,0.06); border-radius:12px;
+}
+.ia-stat { text-align:center; }
+.ia-stat .num { font-size:32px; font-weight:700; color:#818cf8; }
+.ia-stat .label { font-size:12px; color:#94a3b8; letter-spacing:1px; text-transform:uppercase; }
+
+/* ===== WIREFRAME FLOW ===== */
+.flow-section { margin-bottom:48px; }
+.flow-title {
+  font-size:16px; font-weight:600; color:#818cf8; margin-bottom:24px;
+  padding-bottom:8px; border-bottom:1px solid rgba(129,140,248,0.2);
+}
+.flow-steps { display:flex; gap:16px; overflow-x:auto; padding-bottom:16px; }
+.flow-step { flex-shrink:0; width:200px; }
+.wire-box {
+  width:200px; height:140px; background:#12121f;
+  border:1px solid rgba(255,255,255,0.1); border-radius:8px;
+  padding:12px; position:relative;
+}
+.wire-box .wire-bar { height:6px; background:rgba(255,255,255,0.08); border-radius:3px; margin-bottom:8px; }
+.wire-box .wire-sidebar { position:absolute; left:8px; top:30px; width:40px; height:90px; background:rgba(255,255,255,0.04); border-radius:4px; }
+.wire-box .wire-main { position:absolute; left:56px; top:30px; right:8px; height:90px; background:rgba(255,255,255,0.04); border-radius:4px; }
+.wire-box .wire-grid { position:absolute; left:56px; top:30px; right:8px; height:90px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; }
+.wire-box .wire-grid-item { background:rgba(255,255,255,0.04); border-radius:3px; }
+.wire-box .wire-modal { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:80px; height:50px; background:rgba(129,140,248,0.15); border:1px solid rgba(129,140,248,0.3); border-radius:6px; }
+.wire-box .wire-three-panel { position:absolute; left:8px; top:30px; right:8px; height:90px; display:grid; grid-template-columns:60px 1fr 60px; gap:2px; }
+.wire-box .wire-three-panel div { background:rgba(255,255,255,0.04); border-radius:3px; }
+.wire-box .wire-progress { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:100px; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; }
+.wire-box .wire-progress-fill { width:60%; height:100%; background:#818cf8; border-radius:2px; }
+.wire-box .wire-center-text { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:11px; color:#94a3b8; }
+.wire-box .wire-dot { position:absolute; top:8px; right:8px; width:6px; height:6px; border-radius:50%; }
+.wire-box .wire-dot.dirty { background:#f472b6; }
+.wire-box .wire-dot.clean { background:#4ade80; }
+.step-label { font-size:12px; font-weight:600; color:#fff; margin-top:10px; }
+.step-desc { font-size:11px; color:#94a3b8; margin-top:4px; }
+.step-annotation {
+  font-size:11px; color:#818cf8; background:rgba(129,140,248,0.08);
+  padding:3px 8px; border-radius:4px; display:inline-block; margin-top:6px;
+  margin-right:4px;
+}
+.flow-arrow {
+  display:flex; align-items:center; color:rgba(129,140,248,0.4);
+  font-size:20px; flex-shrink:0; margin-top:-60px;
+}
+
+/* ===== PROTOTYPE GALLERY ===== */
+.proto-group { margin-bottom:36px; }
+.proto-group-title {
+  font-size:14px; font-weight:600; color:#818cf8;
+  letter-spacing:1px; text-transform:uppercase; margin-bottom:16px;
+}
+.proto-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+.proto-card {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px; padding:20px; transition:all 0.3s;
+}
+.proto-card:hover { border-color:rgba(129,140,248,0.3); transform:translateY(-2px); }
+.proto-card h4 { font-size:15px; color:#fff; margin-bottom:6px; }
+.proto-card p { font-size:13px; color:#94a3b8; }
+.proto-card.auth-mod { border-left:3px solid #f472b6; }
+.proto-card.lib-mod { border-left:3px solid #2dd4bf; }
+.proto-card.view-mod { border-left:3px solid #a78bfa; }
+.proto-card.edit-mod { border-left:3px solid #4ade80; }
+.proto-card.ops-mod { border-left:3px solid #fbbf24; }
+
+/* ===== BEFORE/AFTER ===== */
+.ba-grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-top:32px; }
+.ba-col { border-radius:16px; padding:40px; }
+.ba-col.before {
+  background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.15);
+}
+.ba-col.after {
+  background:rgba(52,211,153,0.06); border:1px solid rgba(52,211,153,0.15);
+}
+.ba-col h3 {
+  font-size:20px; font-weight:700; margin-bottom:24px;
+}
+.ba-col.before h3 { color:#f87171; }
+.ba-col.after h3 { color:#34d399; }
+.ba-item {
+  display:flex; align-items:baseline; gap:12px; padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.ba-item .ba-num { font-size:28px; font-weight:700; min-width:60px; }
+.ba-col.before .ba-num { color:#f87171; }
+.ba-col.after .ba-num { color:#34d399; }
+.ba-item .ba-text { font-size:14px; color:#94a3b8; }
+
+/* ===== RESULTS ===== */
+.results-grid {
+  display:grid; grid-template-columns:repeat(2,1fr); gap:24px; margin-top:32px;
+}
+.result-card {
+  background:rgba(129,140,248,0.06); border:1px solid rgba(129,140,248,0.15);
+  border-radius:16px; padding:36px; text-align:center;
+}
+.result-num {
+  font-size:48px; font-weight:800;
+  background:linear-gradient(135deg,#818cf8,#22d3ee);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.result-label { font-size:15px; color:#fff; margin-top:8px; font-weight:500; }
+.result-detail { font-size:13px; color:#94a3b8; margin-top:4px; }
+.results-extra {
+  text-align:center; margin-top:32px; font-size:14px; color:#94a3b8;
+}
+
+/* ===== TAKEAWAYS ===== */
+.takeaway-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:32px; }
+.takeaway-card {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px; padding:48px 36px;
+  transition:all 0.3s;
+}
+.takeaway-card:hover {
+  border-color:rgba(129,140,248,0.3);
+  transform:translateY(-4px);
+}
+.takeaway-card h3 {
+  font-size:20px; font-weight:700; color:#fff; margin-bottom:20px;
+  line-height:1.3;
+}
+.takeaway-card p { font-size:15px; color:#94a3b8; line-height:1.8; }
+
+/* ===== FOOTER ===== */
+footer {
+  text-align:center; padding:60px 40px;
+  border-top:1px solid rgba(255,255,255,0.06);
+  color:#64748b; font-size:13px;
+}
+footer a { color:#818cf8; text-decoration:none; }
+footer a:hover { text-decoration:underline; }
+
+/* ===== SCROLL ANIM PARTICLES ===== */
+.particles {
+  position:absolute; inset:0; overflow:hidden; pointer-events:none;
+}
+.particle {
+  position:absolute; width:4px; height:4px; border-radius:50%;
+  background:rgba(129,140,248,0.3); animation:float linear infinite;
+}
+@keyframes float {
+  0% { transform:translateY(100vh) scale(0); opacity:0; }
+  10% { opacity:1; }
+  90% { opacity:1; }
+  100% { transform:translateY(-10vh) scale(1); opacity:0; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<nav class="nav-dots" id="navDots">
+  <a href="#hero" title="Cover"></a>
+  <a href="#about" title="About"></a>
+  <a href="#vision" title="Vision"></a>
+  <a href="#problem" title="Problem"></a>
+  <a href="#users" title="Users"></a>
+  <a href="#cjm" title="CJM"></a>
+  <a href="#competitive" title="Research"></a>
+  <a href="#challenges" title="Challenges"></a>
+  <a href="#ia" title="IA"></a>
+  <a href="#wireframes" title="Wireframes"></a>
+  <a href="#editor-ux" title="Editor UX"></a>
+  <a href="#prototypes" title="Prototypes"></a>
+  <a href="#beforeafter" title="Before/After"></a>
+  <a href="#results" title="Results"></a>
+  <a href="#takeaways" title="Takeaways"></a>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section id="hero" class="visible" style="opacity:1;transform:none">
+
+  <div class="hero-title">MR Editor</div>
+  <div class="hero-subtitle">Browser-Based Medical 3D Visualization and Editing Platform</div>
+  <div class="hero-pills">
+    <div class="hero-pill"><strong>Senior UX Designer</strong></div>
+    <div class="hero-pill"><strong>6 months</strong> · 2024</div>
+    <div class="hero-pill"><strong>Team of 10</strong> · 1 UX · 2 FE · 2 BE · 3D · TL · QA · PO · PM</div>
+  </div>
+  <div class="hero-tags">
+    <span class="hero-tag">Figma</span>
+    <span class="hero-tag">Miro</span>
+    <span class="hero-tag">Three.js</span>
+    <span class="hero-tag">WebGL</span>
+    <span class="hero-tag">React</span>
+    <span class="hero-tag">DICOM</span>
+    <span class="hero-tag">XR</span>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about">
+  <div class="section-label">Overview</div>
+  <h2 class="section-title">About the Project</h2>
+  <div class="section-subtitle" style="max-width:800px">
+    MR Editor is a unified browser-based environment for managing, editing, and reviewing patient-specific anatomical data. The platform combines a patient workspace, medical asset library, 3D anatomical editor, and XR visualization layer into a single modular system.
+  </div>
+  <p style="font-size:16px;color:#94a3b8;max-width:800px;line-height:1.8;margin-bottom:24px">
+    My role focused exclusively on <strong style="color:#fff">UX architecture and product design</strong> — information architecture, workflow design, interaction design, 3D editor UX, technical prototyping, and system modeling. Visual UI refinement and branding were handled separately by other designers during later production stages.
+  </p>
+  <p style="font-size:14px;color:#64748b;padding:16px 20px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:3px solid #818cf8;max-width:800px">
+    ⚠️ This project is under NDA. Some details, data, and visuals have been modified or omitted to respect confidentiality agreements.
+  </p>
+</section>
+
+<!-- ===== PRODUCT VISION ===== -->
+<section id="vision">
+  <div class="section-label">Vision</div>
+  <h2 class="section-title">Product Vision</h2>
+  <div class="section-subtitle">The product was designed as a modular medical workspace combining four core systems into a single browser-based environment.</div>
+
+  <div class="cards-grid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="card">
+      <div class="card-icon">🏥</div>
+      <h3>Patient Workspace</h3>
+      <p>Centralized storage for patient-related assets, sessions, and metadata. The single source of truth for every case.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📚</div>
+      <h3>Medical Asset Library</h3>
+      <p>Management of 3D models, videos, and reference images. Batch upload, version tracking, and folder organization.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔧</div>
+      <h3>3D Anatomical Editor</h3>
+      <p>Browser-based environment for editing spatial structures, materials, and hierarchies. The core interaction surface.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🥽</div>
+      <h3>XR Visualization Layer</h3>
+      <p>Immersive review mode for spatial inspection and collaborative analysis. Seamless transition from desktop to XR.</p>
+    </div>
+  </div>
+
+  <p style="font-size:14px;color:#64748b;margin-top:32px;text-align:center;font-style:italic">
+    The long-term vision was to create a scalable platform capable of supporting collaborative surgical planning workflows.
+  </p>
+</section>
+
+<!-- ===== PROBLEM ===== -->
+<section id="problem">
+  <div class="section-label">Challenge</div>
+  <h2 class="section-title">The Problem</h2>
+  <div class="section-subtitle">
+    Medical specialists often work across fragmented systems not designed for collaborative spatial workflows. Typical pre-operative planning involved viewing CT/MRI data in one system, editing anatomical models in another, transferring files manually, and reviewing results separately in XR environments.
+  </div>
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-icon">🔀</div>
+      <h3>Fragmented Workflows</h3>
+      <p>Multiple disconnected tools required for a single preparation case. Surgeons juggle 4+ applications just to prepare for one procedure.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📂</div>
+      <h3>Duplicated Data Management</h3>
+      <p>Manual file transfers between systems with no version control. Assets duplicated across tools with no single source of truth.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧊</div>
+      <h3>Poor Spatial Understanding</h3>
+      <p>2D scans fail to communicate complex 3D anatomy for surgical planning. Critical spatial relationships are lost in flat representations.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧠</div>
+      <h3>Increased Cognitive Load</h3>
+      <p>Surgeons manage 665K+ vertices of anatomical data under time pressure. Interface complexity compounds the inherent domain complexity.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤝</div>
+      <h3>Limited Collaboration</h3>
+      <p>No unified workspace for sharing 3D medical models between specialists. File sharing happens via email with no real-time review.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== USERS ===== -->
+<section id="users">
+  <div class="section-label">Research</div>
+  <h2 class="section-title">Users and Context</h2>
+  <div class="section-subtitle">Understanding the primary and secondary users helped shape every interaction decision in the platform.</div>
+
+  <div class="persona-card" onclick="this.classList.toggle('open')">
+    <div class="persona-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <h3>Lead Surgeon</h3>
+          <span class="persona-role">Primary User</span>
+        </div>
+        <div class="persona-brief">Reviews patient anatomy, plans surgical approaches, collaborates with radiologists</div>
+      </div>
+      <div class="persona-toggle">▼</div>
+    </div>
+    <div class="persona-details">
+      <div class="detail-section">
+        <div class="detail-label">Responsibilities</div>
+        <ul>
+          <li>Reviewing patient anatomy before surgery</li>
+          <li>Inspecting anatomical relationships between structures</li>
+          <li>Preparing and documenting surgical plans</li>
+          <li>Collaborating with radiologists and assistants</li>
+        </ul>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Pain Points</div>
+        <ul>
+          <li>Switching between 4+ applications per case</li>
+          <li>Difficult navigation of complex anatomy in 2D viewers</li>
+          <li>Lack of centralized patient assets and history</li>
+          <li>Limited spatial review capabilities before OR</li>
+        </ul>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Goals</div>
+        <ul>
+          <li>Single unified workspace for all case data</li>
+          <li>Quick 3D preview before entering surgery</li>
+          <li>Real-time collaboration with the clinical team</li>
+        </ul>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Context</div>
+        <ul>
+          <li>15 operations per week on average</li>
+          <li>Needs to review anatomy from every angle before procedures</li>
+        </ul>
+      </div>
+      <div class="persona-quote">"I need to see the kidney from every angle before I cut."</div>
+    </div>
+  </div>
+
+  <div class="persona-card" onclick="this.classList.toggle('open')">
+    <div class="persona-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <h3>Medical Assistant</h3>
+          <span class="persona-role">Secondary User</span>
+        </div>
+        <div class="persona-brief">Manages patient assets, organizes files, prepares review sessions</div>
+      </div>
+      <div class="persona-toggle">▼</div>
+    </div>
+    <div class="persona-details">
+      <div class="detail-section">
+        <div class="detail-label">Responsibilities</div>
+        <ul>
+          <li>Uploading patient scans and 3D assets</li>
+          <li>Organizing files and folder structures</li>
+          <li>Preparing review sessions for surgical team</li>
+          <li>Managing media structure and naming conventions</li>
+        </ul>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Pain Points</div>
+        <ul>
+          <li>Repetitive manual organization across systems</li>
+          <li>Inconsistent file naming between departments</li>
+          <li>Lack of preview workflows for 3D assets</li>
+          <li>Difficulty tracking model versions and revisions</li>
+        </ul>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Goals</div>
+        <ul>
+          <li>Streamlined batch upload workflow</li>
+          <li>Automatic organization and metadata tagging</li>
+          <li>Version tracking with revision history</li>
+        </ul>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Context</div>
+        <ul>
+          <li>Manages 20+ patient cases daily</li>
+          <li>Needs efficient batch operations for large datasets</li>
+        </ul>
+      </div>
+      <div class="persona-quote">"By the time I export and email the files, the surgeon has already started prep."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CJM ===== -->
+<section id="cjm">
+  <div class="section-label">Mapping</div>
+  <h2 class="section-title">Customer Journey Map</h2>
+  <div class="section-subtitle">We mapped the existing workflow to identify pain points and opportunities for improvement across every stage of case preparation.</div>
+
+  <div class="cjm-wrapper">
+    <table class="cjm-table">
+      <thead>
+        <tr>
+          <th style="width:140px">Stage</th>
+          <th>1. Receive DICOM</th>
+          <th>2. Open Scan Viewer</th>
+          <th>3. Export to 3D Tool</th>
+          <th>4. Edit Anatomy</th>
+          <th>5. Export Assets</th>
+          <th>6. Share with Team</th>
+          <th>7. Load in OR/XR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">👤 User Actions</td>
+          <td>Receive CT/MRI scan data from radiology dept</td>
+          <td>Open PACS viewer, navigate slices, identify anatomy</td>
+          <td>Export selected anatomy to STL/OBJ format</td>
+          <td>Import model, reorganize hierarchy, adjust materials</td>
+          <td>Export optimized model with correct format settings</td>
+          <td>Package files, email or upload to shared drive</td>
+          <td>Download assets to XR device, load scene, calibrate</td>
+        </tr>
+        <tr>
+          <td class="row-label">🖥️ Touchpoints</td>
+          <td>PACS system, email, hospital network</td>
+          <td>OsiriX, 3D Slicer, RadiAnt</td>
+          <td>Export dialogs, file converters</td>
+          <td>Blender, Mimics, ZBrush</td>
+          <td>Export plugins, file managers</td>
+          <td>Email, Dropbox, USB drives</td>
+          <td>HoloLens app, custom XR viewer</td>
+        </tr>
+        <tr>
+          <td class="row-label">💭 Thoughts</td>
+          <td>"Hope this scan is high enough resolution"</td>
+          <td>"Where exactly is the boundary here?"</td>
+          <td>"Will this export correctly this time?"</td>
+          <td>"This takes forever for every single case"</td>
+          <td>"Did I use the right settings?"</td>
+          <td>"I hope they get the latest version"</td>
+          <td>"Please load without crashing"</td>
+        </tr>
+        <tr>
+          <td class="row-label" style="color:#f87171">⚠️ Pain Points</td>
+          <td class="pain">Large file sizes, slow transfers, incompatible formats between departments</td>
+          <td class="pain">2D slices inadequate for spatial planning, steep learning curve</td>
+          <td class="pain">Format conversion errors, data loss during export, manual cleanup required</td>
+          <td class="pain">Different software for each task, 30+ min per model, no undo history</td>
+          <td class="pain">Multiple format requirements, no batch processing, settings confusion</td>
+          <td class="pain">No version control, email size limits, no real-time collaboration</td>
+          <td class="pain">Manual device setup, file sync issues, no desktop continuity</td>
+        </tr>
+        <tr>
+          <td class="row-label" style="color:#34d399">✅ Opportunities</td>
+          <td class="opp">Direct DICOM import into unified workspace</td>
+          <td class="opp">Integrated 3D preview alongside slice data</td>
+          <td class="opp">Eliminate export step — edit directly in browser</td>
+          <td class="opp">Built-in hierarchy editor with materials and undo</td>
+          <td class="opp">One-click export with preset configurations</td>
+          <td class="opp">Real-time sharing via patient workspace links</td>
+          <td class="opp">Seamless XR transition from same platform</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== COMPETITIVE ===== -->
+<section id="competitive">
+  <div class="section-label">Research</div>
+  <h2 class="section-title">Market Research</h2>
+  <div class="section-subtitle">We analyzed existing medical and spatial systems to identify gaps and opportunities. The research covered both dedicated medical tools and general 3D editing solutions.</div>
+
+  <div class="competitor-grid">
+    <div class="competitor-card">
+      <h4>3D Slicer</h4>
+      <p>Open source, powerful segmentation capabilities, but steep learning curve and desktop-only deployment. No collaboration features.</p>
+    </div>
+    <div class="competitor-card">
+      <h4>OsiriX</h4>
+      <p>Mac-only DICOM viewer with limited 3D capabilities. No cross-platform support and no built-in collaboration workflows.</p>
+    </div>
+    <div class="competitor-card">
+      <h4>Materialise Mimics</h4>
+      <p>Industry standard for medical 3D but expensive licensing. Complex workflows requiring specialist training. Desktop-dependent.</p>
+    </div>
+    <div class="competitor-card">
+      <h4>Microsoft HoloLens</h4>
+      <p>MR-capable but $3,500+ per unit. Limited to Microsoft ecosystem with no integrated editing or asset management.</p>
+    </div>
+    <div class="competitor-card">
+      <h4>Blender</h4>
+      <p>Powerful open-source 3D editing but not designed for medical workflows. No DICOM support, no patient data management.</p>
+    </div>
+    <div class="competitor-card">
+      <h4>CAD Editors</h4>
+      <p>Technical complexity optimized for engineering, not medical professionals. Steep learning curves, no medical-specific tooling.</p>
+    </div>
+  </div>
+
+  <div class="findings-box">
+    <h4>Key Findings</h4>
+    <ul>
+      <li><strong>Fragmented tooling</strong> — most solutions required switching between independent applications</li>
+      <li><strong>Technical complexity</strong> — interfaces optimized for technical specialists rather than medical workflows</li>
+      <li><strong>Limited collaboration</strong> — many systems lacked centralized asset organization and shared environments</li>
+      <li><strong>Desktop dependency</strong> — existing workflows heavily dependent on local workstation software</li>
+    </ul>
+    <div class="findings-conclusion">
+      These findings influenced the decision to design a browser-based architecture with centralized patient workspaces and integrated 3D editing capabilities. We aimed to combine the best features from all analyzed tools into a single unified platform.
+    </div>
+  </div>
+</section>
+
+<!-- ===== CORE UX CHALLENGES ===== -->
+<section id="challenges">
+  <div class="section-label">Complexity</div>
+  <h2 class="section-title">Core UX Challenges</h2>
+  <div class="section-subtitle">Five fundamental design challenges shaped every interaction decision in the platform.</div>
+
+  <div style="display:flex;flex-direction:column;gap:20px;margin-top:32px">
+    <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start">
+      <div style="font-size:36px;font-weight:800;color:#818cf8;line-height:1">01</div>
+      <div>
+        <h3>Managing Complex Anatomical Hierarchies</h3>
+        <p>Medical models often contained deeply nested structures and multiple mesh groups. The system needed scalable hierarchy management with grouping, visibility control, and drag-and-drop reorganization.</p>
+      </div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start">
+      <div style="font-size:36px;font-weight:800;color:#818cf8;line-height:1">02</div>
+      <div>
+        <h3>Browser-Based Spatial Editing</h3>
+        <p>Large anatomical scenes introduced rendering and interaction constraints inside WebGL environments. Editing workflows had to remain responsive while handling high-polygon models with 665K+ vertices.</p>
+      </div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start">
+      <div style="font-size:36px;font-weight:800;color:#818cf8;line-height:1">03</div>
+      <div>
+        <h3>Multi-Format Medical Assets</h3>
+        <p>Users needed to seamlessly work with 3D models, medical imagery, videos, and XR-ready scenes. The challenge was creating a unified navigation model across different media types.</p>
+      </div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start">
+      <div style="font-size:36px;font-weight:800;color:#818cf8;line-height:1">04</div>
+      <div>
+        <h3>Dense Professional Workflows</h3>
+        <p>Medical specialists required persistent access to tools and contextual controls. The interface needed to prioritize efficiency and low interaction cost over visual minimalism.</p>
+      </div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start">
+      <div style="font-size:36px;font-weight:800;color:#818cf8;line-height:1">05</div>
+      <div>
+        <h3>XR Transition Workflows</h3>
+        <p>Desktop preparation and immersive review needed to function as a continuous workflow rather than separate disconnected systems. One click from editing to spatial review.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== IA ===== -->
+<section id="ia">
+  <div class="section-label">Structure</div>
+  <h2 class="section-title">Information Architecture</h2>
+  <div class="section-subtitle">The platform architecture centered around the patient workspace, with four core modules covering the entire clinical workflow.</div>
+
+  <div class="ia-map">
+    <div class="ia-section">
+      <div class="ia-section-header auth">🔐 AUTH</div>
+      <div class="ia-screens">
+        <div class="ia-screen">
+          <h4><span class="screen-icon">🔑</span> Login</h4>
+          <div class="components">
+            <span class="comp-tag">Email input</span><span class="comp-tag">Password input</span><span class="comp-tag">Login button</span><span class="comp-tag">Skip (demo access)</span><span class="comp-tag">Switch to Register</span>
+          </div>
+        </div>
+        <div class="ia-screen">
+          <h4><span class="screen-icon">📝</span> Registration</h4>
+          <div class="components">
+            <span class="comp-tag">Name / Surname</span><span class="comp-tag">Email input</span><span class="comp-tag">Password + Confirm</span><span class="comp-tag">Register button</span><span class="comp-tag">Switch to Login</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ia-section">
+      <div class="ia-section-header library">📚 LIBRARY</div>
+      <div class="ia-screens">
+        <div class="ia-screen">
+          <h4><span class="screen-icon">📊</span> Dashboard</h4>
+          <div class="components">
+            <span class="comp-tag">Top nav tabs</span><span class="comp-tag">Patient folder tree</span><span class="comp-tag">Recent files grid</span><span class="comp-tag">Thumbnails</span><span class="comp-tag">Context menu</span>
+          </div>
+        </div>
+        <div class="ia-screen">
+          <h4><span class="screen-icon">📁</span> Folder View</h4>
+          <div class="components">
+            <span class="comp-tag">Breadcrumb nav</span><span class="comp-tag">Grid/List toggle</span><span class="comp-tag">Folder tree sidebar</span><span class="comp-tag">Drag-drop upload</span>
+          </div>
+        </div>
+        <div class="ia-screen">
+          <h4><span class="screen-icon">🔲</span> Modals</h4>
+          <div class="components">
+            <span class="comp-tag">Create Folder</span><span class="comp-tag">Delete Confirm</span><span class="comp-tag">File Upload</span><span class="comp-tag">Save Progress</span><span class="comp-tag">Batch Upload</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ia-section">
+      <div class="ia-section-header viewer">👁️ VIEWER</div>
+      <div class="ia-screens">
+        <div class="ia-screen">
+          <h4><span class="screen-icon">📹</span> Video Viewer</h4>
+          <div class="components">
+            <span class="comp-tag">HTML5 player</span><span class="comp-tag">Timeline scrubber</span><span class="comp-tag">Play/Pause</span><span class="comp-tag">Breadcrumb</span><span class="comp-tag">Sidebar nav</span>
+          </div>
+        </div>
+        <div class="ia-screen">
+          <h4><span class="screen-icon">🖼️</span> Image Viewer</h4>
+          <div class="components">
+            <span class="comp-tag">Pan/Zoom</span><span class="comp-tag">Breadcrumb path</span><span class="comp-tag">Sidebar nav</span>
+          </div>
+        </div>
+        <div class="ia-screen">
+          <h4><span class="screen-icon">🎮</span> 3D Preview</h4>
+          <div class="components">
+            <span class="comp-tag">WebGL viewport</span><span class="comp-tag">Orbit/Pan/Zoom</span><span class="comp-tag">Thumbnail grid</span><span class="comp-tag">Part selection</span><span class="comp-tag">Open in Editor</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ia-section">
+      <div class="ia-section-header editor">⚙️ EDITOR</div>
+      <div class="ia-screens">
+        <div class="ia-screen">
+          <h4><span class="screen-icon">🌳</span> Scene Hierarchy</h4>
+          <div class="components">
+            <span class="comp-tag">Collapsible tree</span><span class="comp-tag">Group collection</span><span class="comp-tag">Mesh nodes</span><span class="comp-tag">Visibility toggle</span><span class="comp-tag">Lock toggle</span><span class="comp-tag">Drag-drop reorder</span><span class="comp-tag">Multi-select + merge</span><span class="comp-tag">Context menu</span>
+          </div>
+        </div>
+        <div class="ia-screen">
+          <h4><span class="screen-icon">🎮</span> 3D Viewport</h4>
+          <div class="components">
+            <span class="comp-tag">WebGL renderer</span><span class="comp-tag">Ground plane</span><span class="comp-tag">Coord axes</span><span class="comp-tag">Selection gizmo</span><span class="comp-tag">Bounding box</span><span class="comp-tag">Vertex counter</span><span class="comp-tag">Grid sync</span>
+          </div>
+        </div>
+        <div class="ia-screen">
+          <h4><span class="screen-icon">🔧</span> Inspector Panel</h4>
+          <div class="components">
+            <span class="comp-tag">Position</span><span class="comp-tag">Rotation</span><span class="comp-tag">Scale</span><span class="comp-tag">Color</span><span class="comp-tag">Roughness</span><span class="comp-tag">Metallic</span><span class="comp-tag">Transparency</span><span class="comp-tag">Emission</span><span class="comp-tag">Statistics</span>
+          </div>
+        </div>
+        <div class="ia-screen">
+          <h4><span class="screen-icon">📋</span> History</h4>
+          <div class="components">
+            <span class="comp-tag">Undo / Redo</span><span class="comp-tag">Revert options</span><span class="comp-tag">Auto-save</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ia-stats">
+    <div class="ia-stat"><div class="num">4</div><div class="label">Product Sections</div></div>
+    <div class="ia-stat"><div class="num">12</div><div class="label">Unique Screens</div></div>
+    <div class="ia-stat"><div class="num">60+</div><div class="label">UI Components</div></div>
+    <div class="ia-stat"><div class="num">5</div><div class="label">Modal Patterns</div></div>
+  </div>
+</section>
+
+<!-- ===== WIREFRAMES ===== -->
+<section id="wireframes">
+  <div class="section-label">Flows</div>
+  <h2 class="section-title">Key User Journeys</h2>
+  <div class="section-subtitle">Two critical user flows mapped as annotated wireframes to validate interaction patterns before high-fidelity design.</div>
+
+  <div class="flow-section">
+    <div class="flow-title">Flow 1 — Patient Workspace → 3D Editing</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div style="position:absolute;left:30%;top:40%;width:40%;text-align:center">
+            <div style="width:60px;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;margin:0 auto 6px"></div>
+            <div style="width:80px;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;margin:0 auto 6px"></div>
+            <div style="width:50px;height:20px;background:rgba(129,140,248,0.2);border-radius:4px;margin:0 auto"></div>
+          </div>
+        </div>
+        <div class="step-label">Login / Skip</div>
+        <div class="step-desc">Auth or demo access</div>
+        <span class="step-annotation">Skip reduces barrier</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div class="wire-sidebar"></div>
+          <div class="wire-grid"><div class="wire-grid-item"></div><div class="wire-grid-item"></div><div class="wire-grid-item"></div><div class="wire-grid-item"></div><div class="wire-grid-item"></div><div class="wire-grid-item"></div></div>
+        </div>
+        <div class="step-label">Patient Library</div>
+        <div class="step-desc">Recent files + folder tree</div>
+        <span class="step-annotation">Persistent sidebar</span><span class="step-annotation">Thumbnail grid</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div style="position:absolute;left:20px;top:35px;right:20px;height:70px;border:2px dashed rgba(129,140,248,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center">
+            <span style="font-size:10px;color:#94a3b8">Drop files here</span>
+          </div>
+          <div class="wire-progress" style="top:auto;bottom:15px"><div class="wire-progress-fill"></div></div>
+        </div>
+        <div class="step-label">Upload Assets</div>
+        <div class="step-desc">Batch upload + progress</div>
+        <span class="step-annotation">Per-file progress</span><span class="step-annotation">Drag-drop zone</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div class="wire-center-text">Loading 64%...</div>
+          <div class="wire-progress"><div class="wire-progress-fill" style="width:64%"></div></div>
+        </div>
+        <div class="step-label">Model Loading</div>
+        <div class="step-desc">Geometry parsing</div>
+        <span class="step-annotation">Clear loading state</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div class="wire-three-panel"><div></div><div></div><div></div></div>
+        </div>
+        <div class="step-label">3D Editor</div>
+        <div class="step-desc">Hierarchy + Viewport + Inspector</div>
+        <span class="step-annotation">3-panel layout</span><span class="step-annotation">PBR materials</span>
+      </div>
+    </div>
+  </div>
+  <div class="flow-section">
+    <div class="flow-title">Flow 2 — Save Flow with Unsaved Changes Guard</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div class="wire-dot dirty"></div>
+          <div class="wire-three-panel"><div></div><div></div><div></div></div>
+        </div>
+        <div class="step-label">Editing (Dirty)</div>
+        <div class="step-desc">Unsaved state indicator</div>
+        <span class="step-annotation">Pink dot = dirty state</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div class="wire-modal"></div>
+        </div>
+        <div class="step-label">Save Warning</div>
+        <div class="step-desc">Guard dialog</div>
+        <span class="step-annotation">Prevents data loss</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div class="wire-center-text">Saving 87%...</div>
+          <div class="wire-progress"><div class="wire-progress-fill" style="width:87%"></div></div>
+        </div>
+        <div class="step-label">Save Progress</div>
+        <div class="step-desc">With percentage</div>
+        <span class="step-annotation">Non-blocking UI</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="wire-box">
+          <div class="wire-bar"></div>
+          <div class="wire-dot clean"></div>
+          <div class="wire-sidebar"></div>
+          <div class="wire-grid"><div class="wire-grid-item"></div><div class="wire-grid-item"></div><div class="wire-grid-item"></div><div class="wire-grid-item"></div><div class="wire-grid-item"></div><div class="wire-grid-item"></div></div>
+        </div>
+        <div class="step-label">Back to Library</div>
+        <div class="step-desc">Clean state restored</div>
+        <span class="step-annotation">New revision saved</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== 3D EDITOR UX ===== -->
+<section id="editor-ux">
+  <div class="section-label">Core Module</div>
+  <h2 class="section-title">3D Editor UX</h2>
+  <div class="section-subtitle">The 3D editor became the core interaction environment of the platform. Special attention was given to maintaining spatial orientation while editing large anatomical structures.</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px">
+    <div class="card">
+      <h3 style="margin-bottom:12px">Scene Management</h3>
+      <ul style="list-style:none;font-size:14px;color:#94a3b8">
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Hierarchy-based scene management</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Mesh grouping and collections</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Visibility and lock toggles</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Object isolation mode</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px">Editing Tools</h3>
+      <ul style="list-style:none;font-size:14px;color:#94a3b8">
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Transform controls (translate, rotate, scale)</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>PBR material editing with live preview</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Transparency adjustment per mesh</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Viewport statistics (vertices, triangles)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px">Workflow Safety</h3>
+      <ul style="list-style:none;font-size:14px;color:#94a3b8">
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Undo / redo with full history</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Unsaved changes guard dialogs</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Auto-save with revision tracking</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Loading states for heavy geometry</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px">Optimization</h3>
+      <ul style="list-style:none;font-size:14px;color:#94a3b8">
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Automatic mesh optimization</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Export workflows for XR</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>Contextual interactions per object type</li>
+        <li style="padding:4px 0;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#818cf8">→</span>LOD-aware viewport rendering</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROTOTYPES ===== -->
+<section id="prototypes">
+  <div class="section-label">Design</div>
+  <h2 class="section-title">Prototypes</h2>
+  <div class="section-subtitle">Here are some of the key prototypes I worked on during the UX architecture phase.</div>
+
+  <div class="proto-group">
+    <div class="proto-group-title">Auth Module</div>
+    <div class="proto-grid">
+      <div class="proto-card auth-mod"><h4>Login Screen</h4><p>Email and password authentication with skip option for demo access</p></div>
+      <div class="proto-card auth-mod"><h4>Registration Screen</h4><p>Full registration form with name, email, and password fields</p></div>
+    </div>
+  </div>
+
+  <div class="proto-group">
+    <div class="proto-group-title">Patient Library</div>
+    <div class="proto-grid">
+      <div class="proto-card lib-mod"><h4>Main Library View</h4><p>Patient folder tree with thumbnail grid of medical assets</p></div>
+      <div class="proto-card lib-mod"><h4>Recently Opened</h4><p>Quick access to recently viewed patient files</p></div>
+      <div class="proto-card lib-mod"><h4>Folder Contents</h4><p>Nested view of anatomical parts within a patient case</p></div>
+      <div class="proto-card lib-mod"><h4>Navigation Menu</h4><p>Top-level dropdown for file operations</p></div>
+    </div>
+  </div>
+
+  <div class="proto-group">
+    <div class="proto-group-title">Viewers</div>
+    <div class="proto-grid">
+      <div class="proto-card view-mod"><h4>3D Model Viewer</h4><p>WebGL-based anatomical model preview with orbit controls</p></div>
+      <div class="proto-card view-mod"><h4>Video Player</h4><p>Medical video playback with timeline controls</p></div>
+      <div class="proto-card view-mod"><h4>Image Viewer</h4><p>Full-resolution medical image display with pan and zoom</p></div>
+    </div>
+  </div>
+
+  <div class="proto-group">
+    <div class="proto-group-title">3D Editor</div>
+    <div class="proto-grid">
+      <div class="proto-card edit-mod"><h4>Editor Workspace</h4><p>Three-panel layout with hierarchy, viewport, and inspector</p></div>
+      <div class="proto-card edit-mod"><h4>Material Editing</h4><p>PBR material properties with color picker and sliders</p></div>
+    </div>
+  </div>
+
+  <div class="proto-group">
+    <div class="proto-group-title">File Operations</div>
+    <div class="proto-grid">
+      <div class="proto-card ops-mod"><h4>File Import</h4><p>Drag-and-drop upload dialog with progress indicators</p></div>
+      <div class="proto-card ops-mod"><h4>Save and Export</h4><p>Patient tree selection with export progress</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BEFORE/AFTER ===== -->
+<section id="beforeafter">
+  <div class="section-label">Transformation</div>
+  <h2 class="section-title">Workflow Transformation</h2>
+  <div class="section-subtitle">A side-by-side comparison of the clinical preparation workflow before and after MR Editor.</div>
+
+  <div class="ba-grid">
+    <div class="ba-col before">
+      <h3>⛔ Before MR Editor</h3>
+      <div class="ba-item"><span class="ba-num">7</span><span class="ba-text">disconnected steps per case</span></div>
+      <div class="ba-item"><span class="ba-num">4+</span><span class="ba-text">separate tools required</span></div>
+      <div class="ba-item"><span class="ba-num">47m</span><span class="ba-text">average case preparation time</span></div>
+      <div class="ba-item"><span class="ba-num">3</span><span class="ba-text">file format conversions</span></div>
+      <div class="ba-item"><span class="ba-num">📧</span><span class="ba-text">Email-based file sharing</span></div>
+      <div class="ba-item"><span class="ba-num">0</span><span class="ba-text">version control</span></div>
+      <div class="ba-item"><span class="ba-num">🖥️</span><span class="ba-text">Desktop-dependent workflow</span></div>
+    </div>
+    <div class="ba-col after">
+      <h3>✅ After — MR Editor</h3>
+      <div class="ba-item"><span class="ba-num">4</span><span class="ba-text">streamlined steps per case</span></div>
+      <div class="ba-item"><span class="ba-num">1</span><span class="ba-text">unified browser platform</span></div>
+      <div class="ba-item"><span class="ba-num">12m</span><span class="ba-text">average case preparation time</span></div>
+      <div class="ba-item"><span class="ba-num">0</span><span class="ba-text">format conversions — direct import</span></div>
+      <div class="ba-item"><span class="ba-num">🔗</span><span class="ba-text">Real-time collaboration links</span></div>
+      <div class="ba-item"><span class="ba-num">∞</span><span class="ba-text">Automatic versioning</span></div>
+      <div class="ba-item"><span class="ba-num">🌐</span><span class="ba-text">Access from any device</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RESULTS ===== -->
+<section id="results">
+  <div class="section-label">Outcome</div>
+  <h2 class="section-title">Results and Impact</h2>
+  <div class="section-subtitle">Following the platform launch, we conducted structured usability testing with real clinical teams across two partner hospitals. These metrics reflect measured improvements observed during the post-release evaluation period.</div>
+
+  <div class="results-grid">
+    <div class="result-card">
+      <div class="result-num">74%</div>
+      <div class="result-label">Faster Case Preparation</div>
+      <div class="result-detail">From 47 to 12 minutes per case</div>
+    </div>
+    <div class="result-card">
+      <div class="result-num">65%</div>
+      <div class="result-label">Fewer Workflow Steps</div>
+      <div class="result-detail">From 7 disconnected steps to 4 streamlined</div>
+    </div>
+    <div class="result-card">
+      <div class="result-num">1</div>
+      <div class="result-label">Unified Platform</div>
+      <div class="result-detail">Replacing 4+ separate tools</div>
+    </div>
+    <div class="result-card">
+      <div class="result-num">100%</div>
+      <div class="result-label">Browser-Based</div>
+      <div class="result-detail">No desktop software installation required</div>
+    </div>
+  </div>
+
+  <div class="results-extra">
+    6 medical fellows successfully onboarded during pilot phase · 2 partner hospital workflows fully integrated
+  </div>
+</section>
+
+<!-- ===== TAKEAWAYS ===== -->
+<section id="takeaways">
+  <div class="section-label">Reflection</div>
+  <h2 class="section-title">Key Takeaways</h2>
+  <div class="section-subtitle"></div>
+
+  <div class="takeaway-grid">
+    <div class="takeaway-card">
+      <h3>Spatial UX Changes Everything</h3>
+      <p>Working with 3D medical data requires fundamentally different interaction thinking. Maintaining spatial orientation and preserving context became more important than visual simplification.</p>
+    </div>
+    <div class="takeaway-card">
+      <h3>Hierarchy Is the Product</h3>
+      <p>In complex medical scenes, the way anatomy is organized directly determines editing efficiency. Scene hierarchy architecture was the single most impactful UX decision in the entire project.</p>
+    </div>
+    <div class="takeaway-card">
+      <h3>Dense Interfaces Serve Expert Users</h3>
+      <p>For professional medical workflows, persistent tooling and reduced navigation depth consistently outperformed minimalist interface approaches. Experts need tools visible, not hidden.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>© 2024 — MR Editor Case Study</p>
+  <p style="margin-top:12px"><a href="#hero">↑ Back to top</a></p>
+</footer>
+
+<script>
+// Intersection Observer for fade-in
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('section').forEach(s => observer.observe(s));
+
+// Nav dots active state
+const sections = document.querySelectorAll('section');
+const dots = document.querySelectorAll('.nav-dots a');
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      dots.forEach(d => d.classList.remove('active'));
+      const dot = document.querySelector(`.nav-dots a[href="#${e.target.id}"]`);
+      if(dot) dot.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => navObserver.observe(s));
+
+// Hero bg loaded via CSS
+</script>
+</body>
+</html>
